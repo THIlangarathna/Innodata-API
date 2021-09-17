@@ -11,6 +11,7 @@ use Alchemy\Zippy\Zippy;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use Image;
+use Illuminate\Support\Facades\Storage;
 
 class ImagesController extends Controller
 {
@@ -54,11 +55,18 @@ class ImagesController extends Controller
             $this->resize($fullimagepath,$imagename);
         }
 
+        //delete zip
+        $deletezip = public_path('storage/zip/'.$replaced.'.zip');
+
+        unset($archive);
+
         //delete uploaded zip
-        File::delete('/storage/zip/'.$replaced.'.zip');
+        if(File::exists($deletezip)){
+            unlink($deletezip);
+        }
 
         //Create a zip
-        $archivezip = $zippy->create('storage/zip/temp/'.$replaced.'.zip',$imagearray, true);
+        $archivezip = $zippy->create('storage/zip/'.$replaced.'.zip',$imagearray, true);
 
         // $zip = Auth::user()->images()->create([
         //     'category' => $validateData['category'],
@@ -86,6 +94,6 @@ class ImagesController extends Controller
         $imgFile->resize('',200, function ($constraint) {
 		    $constraint->aspectRatio();
 		})->save($destinationPath.'/'.$imagename);
-
     }
+
 }

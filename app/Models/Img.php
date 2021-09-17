@@ -13,6 +13,8 @@ class Img extends Model
         'user_id','category','zip'
     ];
 
+    protected $table = 'images';
+
     public function user()
     {
         return $this->belongsTo(User::class);
