@@ -27,11 +27,11 @@ class ImagesController extends Controller
         $zipPath = request('zip')->store('zip','public');
 
         // Get the file name(only the name)
-        $replaced = $this->filename($zipPath);
+        $zipfilename = $this->filename($zipPath);
 
         // Make a new folder with that name
-        $path = 'storage/zip/temp/'.$replaced;
-        File::makeDirectory($path);
+        $temp_path = 'storage/zip/temp/'.$zipfilename;
+        File::makeDirectory($temp_path);
 
         // load zippy
         $zippy = Zippy::load();
@@ -40,38 +40,42 @@ class ImagesController extends Controller
         $archive = $zippy->open('storage/'.$zipPath);
 
         // Extract archive contents to `/tmp`
-        $archive->extract($path);
+        $archive->extract($temp_path);
 
         //get files in the directory
-        $filesInFolder = \File::files($path);
+        $filesInFolder = \File::files($temp_path);
 
         foreach($filesInFolder as $imagepath) { 
             $file = pathinfo($imagepath);
             $imagename = $file['basename'];
-            $fullimagepath = $path.'/'.$imagename;
+            $fullimagepath = $temp_path.'/'.$imagename;
             $imagearray[] = $fullimagepath;
 
             //resize images
             $this->resize($fullimagepath,$imagename);
         }
 
-        //delete zip
-        $deletezip = public_path('storage/zip/'.$replaced.'.zip');
-
+        //unset to delete
         unset($archive);
 
         //delete uploaded zip
-        if(File::exists($deletezip)){
-            unlink($deletezip);
+        if(File::exists(public_path('storage/zip/'.$zipfilename.'.zip'))){
+            File::delete(public_path('storage/zip/'.$zipfilename.'.zip'));
         }
 
         //Create a zip
-        $archivezip = $zippy->create('storage/zip/'.$replaced.'.zip',$imagearray, true);
+        $archivezip = $zippy->create('storage/zip/'.$zipfilename.'.zip',$imagearray, true);
 
-        // $zip = Auth::user()->images()->create([
-        //     'category' => $validateData['category'],
-        //     'zip' => $zipPath,
-        // ]);
+        //delete temp files
+        if(File::exists(public_path('storage/zip/temp/'.$zipfilename))){
+            File::deleteDirectory(public_path('storage/zip/temp/'.$zipfilename));
+        }
+        
+
+        $zip = Auth::user()->images()->create([
+            'category' => $validateData['category'],
+            'zip' => $zipPath,
+        ]);
 
         return response(['message' => 'File uploaded successfully.'],200);
     }
