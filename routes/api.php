@@ -20,8 +20,20 @@ use App\Http\Controllers\API\ImagesController;
 //     return $request->user();
 // });
 
-Route::post('/Login', [UsersController::class, 'login']);
+//Login
+Route::post('/login', [UsersController::class, 'login']);
 
-Route::middleware(['auth:api','admin'])->get('/user', [UsersController::class, 'index']);
+//View user details
+Route::middleware('auth:api')->get('/user', [UsersController::class, 'index']);
 
+//Upload zip file
 Route::middleware(['auth:api','user'])->post('/zip', [ImagesController::class, 'store']);
+
+//View list
+Route::middleware(['auth:api','admin'])->get('/list', [ImagesController::class, 'index']);
+
+//View items
+Route::middleware(['auth:api','admin'])->get('/list/{id}', [ImagesController::class, 'show']);
+
+//Delete temp folder
+Route::middleware(['auth:api','admin'])->get('/close/{id}', [ImagesController::class, 'close']);

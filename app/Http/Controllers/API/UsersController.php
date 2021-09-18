@@ -17,7 +17,7 @@ class UsersController extends Controller
 
         if(!Auth::attempt($login))
         {
-            return response(['message' => 'Invalid Credentials']);
+            return response(['message' => 'Invalid Credentials'],401);
         }
 
         $accessToken = Auth::user()->createToken('authToken')->accessToken;
@@ -27,6 +27,7 @@ class UsersController extends Controller
 
     public function index()
     {
-        return response(['user' => Auth::user()]);
+        return response(['user' => Auth::user()],200);
     }
+
 }
