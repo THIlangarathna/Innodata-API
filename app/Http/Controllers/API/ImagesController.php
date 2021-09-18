@@ -5,14 +5,14 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Auth;
-use App\Models\Img;
+use App\Models\Picture;
 use App\Models\User;
 use Alchemy\Zippy\Zippy;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use Image;
 use Illuminate\Support\Facades\Storage;
-use App\Http\Resources\ImgResource;
+use App\Http\Resources\PictureResource;
 
 class ImagesController extends Controller
 {
@@ -117,35 +117,61 @@ class ImagesController extends Controller
 
     public function index()
     {
-        $list = ImgResource::collection(Img::all());
+        $list = PictureResource::collection(Picture::all());
         return response(['List' => $list],200);
     }
 
     public function show($id)
     {
-        $item = Img::findOrFail($id);
+        $item = Picture::findOrFail($id);
         $zipPath = $item->zip;
 
-        //create temp folder
-        $temp_path = $this->temp_folder($zipPath);
+        // Get the file name(only the name)
+        $zipfilename = $this->filename($zipPath);
 
+        //check if file exits
+        if(File::exists(public_path('storage/zip/temp/'.$zipfilename))){
+            $temp_path = public_path('storage/zip/temp/'.$zipfilename);
+
+            $imagearray = $this->imagedirectory($temp_path);
+        }
+        else
+        {
+            //create temp folder
+            $temp_path = $this->temp_folder($zipPath);
+
+            $imagearray = $this->imagedirectory($temp_path);
+        }
+
+        $details = new PictureResource(Picture::findOrFail($id));
+        return response(['details' => $details,'images_list' => $imagearray],200);
+    }
+
+    public function imagedirectory($temp_path)
+    {
         //get files in the directory
         $filesInFolder = \File::files($temp_path);
 
-        foreach($filesInFolder as $imagepath) { 
+        $index = 0;
+        $imagearray = [];
+
+        foreach($filesInFolder as $imagepath) {
+            
+            $index = $index +1;
             $file = pathinfo($imagepath);
             $imagename = $file['basename'];
             $fullimagepath = $temp_path.'/'.$imagename;
-            $imagearray[] = $fullimagepath;
+            $newfullimagepath = strstr($fullimagepath, 'zip/temp/');
+            $imagearray[] = ['id' => $index, 'path' => $newfullimagepath];
+            
         }
 
-        $details = new ImgResource(Img::findOrFail($id));
-        return response(['details' => $details,'images_list' => $imagearray],200);
+        return $imagearray;
     }
 
     public function close($id)
     {
-        $item = Img::findOrFail($id);
+        $item = Picture::findOrFail($id);
         $zipPath = $item->zip;
 
         //get file name
