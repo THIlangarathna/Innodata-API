@@ -44,6 +44,6 @@ class User extends Authenticatable
 
     public function images()
     {
-        return $this->hasMany(Img::class);
+        return $this->hasMany(Picture::class);
     }
 }
