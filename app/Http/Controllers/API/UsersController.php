@@ -30,4 +30,11 @@ class UsersController extends Controller
         return response(['user' => Auth::user()],200);
     }
 
+    public function logout()
+    {
+        $user = Auth::user()->token();
+        $user->revoke();
+        return response(['message' => 'Logget out successfully'],200);
+    }
+
 }

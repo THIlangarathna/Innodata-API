@@ -23,6 +23,9 @@ use App\Http\Controllers\API\ImagesController;
 //Login
 Route::post('/login', [UsersController::class, 'login']);
 
+//Logout
+Route::middleware('auth:api')->get('/logout', [UsersController::class, 'logout']);
+
 //View user details
 Route::middleware('auth:api')->get('/user', [UsersController::class, 'index']);
 
