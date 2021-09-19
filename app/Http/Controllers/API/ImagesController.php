@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\File;
 use Image;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Resources\PictureResource;
+use \Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ImagesController extends Controller
 {
@@ -123,7 +124,11 @@ class ImagesController extends Controller
 
     public function show($id)
     {
-        $item = Picture::findOrFail($id);
+        try {
+            $item = Picture::findOrFail($id);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response(['message' => 'Not found'], 404);
+        }
         $zipPath = $item->zip;
 
         // Get the file name(only the name)
@@ -156,7 +161,7 @@ class ImagesController extends Controller
         $imagearray = [];
 
         foreach($filesInFolder as $imagepath) {
-            
+
             $index = $index +1;
             $file = pathinfo($imagepath);
             $imagename = $file['basename'];
