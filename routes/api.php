@@ -35,6 +35,8 @@ Route::middleware(['auth:api','user'])->post('/zip', [ImagesController::class, '
 //View list
 Route::middleware(['auth:api','admin'])->get('/list', [ImagesController::class, 'index']);
 
+//ID pattern for {id} = '[0-9]+'
+
 //View items
 Route::middleware(['auth:api','admin'])->get('/list/{id}', [ImagesController::class, 'show']);
 
